@@ -3,13 +3,15 @@ import logging
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ConversationHandler
-from bot.handlers import (
+
+# Import directly from handlers (not bot.handlers)
+from handlers import (
     start_command, help_command, new_topic_start, 
     topic_title, topic_description, topic_category, 
     topic_deadline, my_topics, delete_topic,
     button_callback, cancel_conversation
 )
-from bot.utils import load_topics
+from utils import load_topics
 
 # Load environment variables
 load_dotenv()
