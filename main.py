@@ -1,10 +1,11 @@
 import os
 import logging
+import asyncio
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ConversationHandler
 
-# Import directly from handlers (not bot.handlers)
+# Import directly from handlers
 from handlers import (
     start_command, help_command, new_topic_start, 
     topic_title, topic_description, topic_category, 
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 # Conversation states
 TITLE, DESCRIPTION, CATEGORY, DEADLINE = range(4)
 
-def main():
+async def main():
     """Start the bot."""
     # Get bot token from environment variable
     token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -62,7 +63,7 @@ def main():
 
     # Start the Bot
     logger.info("Bot is starting...")
-    application.run_polling()
+    await application.run_polling()
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
