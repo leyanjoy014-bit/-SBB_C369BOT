@@ -1,8 +1,9 @@
 import os
 import logging
+import asyncio
 from dotenv import load_dotenv
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters, ConversationHandler
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ConversationHandler
 
 # Import from handlers
 from handlers import (
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 # Conversation states
 TITLE, DESCRIPTION, CATEGORY, DEADLINE = range(4)
 
-def main():
+async def main():
     """Start the bot."""
     # Get bot token from environment variable
     token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -34,9 +35,8 @@ def main():
         logger.error("No TELEGRAM_BOT_TOKEN found in environment variables!")
         return
 
-    # Create the Updater
-    updater = Updater(token, use_context=True)
-    dp = updater.dispatcher
+    # Create the Application
+    application = Application.builder().token(token).build()
 
     # Load existing topics
     load_topics()
@@ -45,26 +45,25 @@ def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('new', new_topic_start)],
         states={
-            TITLE: [MessageHandler(Filters.text & ~Filters.command, topic_title)],
-            DESCRIPTION: [MessageHandler(Filters.text & ~Filters.command, topic_description)],
+            TITLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, topic_title)],
+            DESCRIPTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, topic_description)],
             CATEGORY: [CallbackQueryHandler(topic_category)],
-            DEADLINE: [MessageHandler(Filters.text & ~Filters.command, topic_deadline)],
+            DEADLINE: [MessageHandler(filters.TEXT & ~filters.COMMAND, topic_deadline)],
         },
         fallbacks=[CommandHandler('cancel', cancel_conversation)],
     )
 
     # Add handlers
-    dp.add_handler(CommandHandler('start', start_command))
-    dp.add_handler(CommandHandler('help', help_command))
-    dp.add_handler(CommandHandler('my', my_topics))
-    dp.add_handler(CommandHandler('delete', delete_topic))
-    dp.add_handler(conv_handler)
-    dp.add_handler(CallbackQueryHandler(button_callback))
+    application.add_handler(CommandHandler('start', start_command))
+    application.add_handler(CommandHandler('help', help_command))
+    application.add_handler(CommandHandler('my', my_topics))
+    application.add_handler(CommandHandler('delete', delete_topic))
+    application.add_handler(conv_handler)
+    application.add_handler(CallbackQueryHandler(button_callback))
 
     # Start the Bot
     logger.info("Bot is starting...")
-    updater.start_polling()
-    updater.idle()
+    await application.run_polling()
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
