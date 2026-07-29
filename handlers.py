@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import CallbackContext, ConversationHandler
 from utils import topics, save_topics
 
 # Conversation states
@@ -10,7 +10,7 @@ TITLE, DESCRIPTION, CATEGORY, DEADLINE = range(4)
 # Temporary storage for conversation data
 user_data_temp = {}
 
-def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def start_command(update: Update, context: CallbackContext):
     """Send a welcome message when /start is issued."""
     welcome_text = """
 📝 **Welcome to Create Topic Bot!**
@@ -27,7 +27,7 @@ Click /new to get started!
     """
     update.message.reply_text(welcome_text, parse_mode='Markdown')
 
-def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def help_command(update: Update, context: CallbackContext):
     """Send a help message."""
     help_text = """
 🤔 **How to use this bot:**
@@ -46,7 +46,7 @@ def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     update.message.reply_text(help_text, parse_mode='Markdown')
 
-def new_topic_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def new_topic_start(update: Update, context: CallbackContext):
     """Start the new topic creation process."""
     user_id = str(update.effective_user.id)
     user_data_temp[user_id] = {}
@@ -59,7 +59,7 @@ def new_topic_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return TITLE
 
-def topic_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def topic_title(update: Update, context: CallbackContext):
     """Store the topic title."""
     user_id = str(update.effective_user.id)
     title = update.message.text.strip()
@@ -81,7 +81,7 @@ def topic_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return DESCRIPTION
 
-def topic_description(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def topic_description(update: Update, context: CallbackContext):
     """Store the topic description."""
     user_id = str(update.effective_user.id)
     description = update.message.text.strip()
@@ -111,7 +111,7 @@ def topic_description(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return CATEGORY
 
-def topic_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def topic_category(update: Update, context: CallbackContext):
     """Store the topic category."""
     query = update.callback_query
     query.answer()
@@ -137,7 +137,7 @@ def topic_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return DEADLINE
 
-def topic_deadline(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def topic_deadline(update: Update, context: CallbackContext):
     """Store the topic deadline and save the topic."""
     user_id = str(update.effective_user.id)
     deadline_input = update.message.text.strip()
@@ -197,7 +197,7 @@ def topic_deadline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     update.message.reply_text(response, parse_mode='Markdown')
     return ConversationHandler.END
 
-def my_topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def my_topics(update: Update, context: CallbackContext):
     """Show all topics for the user."""
     user_id = str(update.effective_user.id)
     
@@ -229,7 +229,7 @@ def my_topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response += "Use /delete to remove a topic."
     update.message.reply_text(response, parse_mode='Markdown')
 
-def delete_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def delete_topic(update: Update, context: CallbackContext):
     """Delete a topic."""
     user_id = str(update.effective_user.id)
     
@@ -255,7 +255,7 @@ def delete_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
-def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def button_callback(update: Update, context: CallbackContext):
     """Handle button callbacks."""
     query = update.callback_query
     query.answer()
@@ -286,7 +286,7 @@ def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # This is handled in topic_category function
         pass
 
-def cancel_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def cancel_conversation(update: Update, context: CallbackContext):
     """Cancel the current conversation."""
     user_id = str(update.effective_user.id)
     if user_id in user_data_temp:
