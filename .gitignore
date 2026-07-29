@@ -8,3 +8,5 @@ env/
 .idea/
 *.log
 topics.json
+*.db
+.DS_Store
