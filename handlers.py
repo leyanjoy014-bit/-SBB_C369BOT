@@ -10,7 +10,7 @@ TITLE, DESCRIPTION, CATEGORY, DEADLINE = range(4)
 # Temporary storage for conversation data
 user_data_temp = {}
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a welcome message when /start is issued."""
     welcome_text = """
 📝 **Welcome to Create Topic Bot!**
@@ -25,9 +25,9 @@ This bot helps you create and manage topics easily.
 
 Click /new to get started!
     """
-    await update.message.reply_text(welcome_text, parse_mode='Markdown')
+    update.message.reply_text(welcome_text, parse_mode='Markdown')
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a help message."""
     help_text = """
 🤔 **How to use this bot:**
@@ -44,14 +44,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 - /delete - Delete a topic
 - /cancel - Cancel current operation
     """
-    await update.message.reply_text(help_text, parse_mode='Markdown')
+    update.message.reply_text(help_text, parse_mode='Markdown')
 
-async def new_topic_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def new_topic_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start the new topic creation process."""
     user_id = str(update.effective_user.id)
     user_data_temp[user_id] = {}
     
-    await update.message.reply_text(
+    update.message.reply_text(
         "📝 **Let's create a new topic!**\n\n"
         "First, what's the **title** of your topic?\n"
         "(Type /cancel to cancel)",
@@ -59,13 +59,13 @@ async def new_topic_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return TITLE
 
-async def topic_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def topic_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Store the topic title."""
     user_id = str(update.effective_user.id)
     title = update.message.text.strip()
     
     if len(title) > 100:
-        await update.message.reply_text(
+        update.message.reply_text(
             "❌ Title is too long! Please keep it under 100 characters.\n"
             "Try again or type /cancel to cancel."
         )
@@ -73,7 +73,7 @@ async def topic_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user_data_temp[user_id]['title'] = title
     
-    await update.message.reply_text(
+    update.message.reply_text(
         f"✅ Great! Title: *{title}*\n\n"
         "Now, add a **description** for your topic.\n"
         "(Type 'skip' to skip this step)",
@@ -81,7 +81,7 @@ async def topic_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return DESCRIPTION
 
-async def topic_description(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def topic_description(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Store the topic description."""
     user_id = str(update.effective_user.id)
     description = update.message.text.strip()
@@ -104,17 +104,17 @@ async def topic_description(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await update.message.reply_text(
+    update.message.reply_text(
         "📂 **Select a category** for your topic:",
         reply_markup=reply_markup,
         parse_mode='Markdown'
     )
     return CATEGORY
 
-async def topic_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def topic_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Store the topic category."""
     query = update.callback_query
-    await query.answer()
+    query.answer()
     
     user_id = str(query.from_user.id)
     category = query.data.replace('cat_', '')
@@ -129,7 +129,7 @@ async def topic_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user_data_temp[user_id]['category'] = category
     
-    await query.edit_message_text(
+    query.edit_message_text(
         f"✅ Category selected: *{category_map.get(category, category)}*\n\n"
         "📅 Now, set a **deadline** for your topic.\n"
         "(Format: YYYY-MM-DD or type 'skip' to skip)",
@@ -137,7 +137,7 @@ async def topic_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return DEADLINE
 
-async def topic_deadline(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def topic_deadline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Store the topic deadline and save the topic."""
     user_id = str(update.effective_user.id)
     deadline_input = update.message.text.strip()
@@ -148,7 +148,7 @@ async def topic_deadline(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             deadline = datetime.strptime(deadline_input, '%Y-%m-%d').strftime('%Y-%m-%d')
         except ValueError:
-            await update.message.reply_text(
+            update.message.reply_text(
                 "❌ Invalid date format! Please use YYYY-MM-DD format.\n"
                 "Example: 2024-12-31\n"
                 "Try again or type 'skip' to skip."
@@ -194,15 +194,15 @@ async def topic_deadline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response += f"\n🆔 **Topic ID:** {len(topics[user_id])}"
     response += "\n\nUse /my to view all your topics."
     
-    await update.message.reply_text(response, parse_mode='Markdown')
+    update.message.reply_text(response, parse_mode='Markdown')
     return ConversationHandler.END
 
-async def my_topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def my_topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Show all topics for the user."""
     user_id = str(update.effective_user.id)
     
     if user_id not in topics or not topics[user_id]:
-        await update.message.reply_text(
+        update.message.reply_text(
             "📭 You haven't created any topics yet!\n"
             "Use /new to create your first topic."
         )
@@ -227,14 +227,14 @@ async def my_topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response += "\n"
     
     response += "Use /delete to remove a topic."
-    await update.message.reply_text(response, parse_mode='Markdown')
+    update.message.reply_text(response, parse_mode='Markdown')
 
-async def delete_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def delete_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Delete a topic."""
     user_id = str(update.effective_user.id)
     
     if user_id not in topics or not topics[user_id]:
-        await update.message.reply_text(
+        update.message.reply_text(
             "📭 You don't have any topics to delete.\n"
             "Use /new to create your first topic."
         )
@@ -249,16 +249,16 @@ async def delete_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="del_cancel")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await update.message.reply_text(
+    update.message.reply_text(
         "🗑️ **Select a topic to delete:**",
         reply_markup=reply_markup,
         parse_mode='Markdown'
     )
 
-async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle button callbacks."""
     query = update.callback_query
-    await query.answer()
+    query.answer()
     
     user_id = str(query.from_user.id)
     data = query.data
@@ -266,7 +266,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Handle delete confirmation
     if data.startswith('del_'):
         if data == 'del_cancel':
-            await query.edit_message_text("✅ Deletion cancelled.")
+            query.edit_message_text("✅ Deletion cancelled.")
             return
         
         try:
@@ -274,25 +274,25 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             deleted_topic = topics[user_id].pop(idx)
             save_topics()
             
-            await query.edit_message_text(
+            query.edit_message_text(
                 f"✅ Topic deleted: *{deleted_topic['title']}*",
                 parse_mode='Markdown'
             )
         except (IndexError, ValueError):
-            await query.edit_message_text("❌ Error deleting topic. Please try again.")
+            query.edit_message_text("❌ Error deleting topic. Please try again.")
     
     # Handle conversation category selection
     elif data.startswith('cat_'):
         # This is handled in topic_category function
         pass
 
-async def cancel_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def cancel_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel the current conversation."""
     user_id = str(update.effective_user.id)
     if user_id in user_data_temp:
         del user_data_temp[user_id]
     
-    await update.message.reply_text(
+    update.message.reply_text(
         "❌ Topic creation cancelled.\n"
         "Click /new to start again."
     )
